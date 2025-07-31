@@ -120,6 +120,31 @@ Resources:
         AllowHeaders: "'content-type,x-amz-date,authorization,x-api-key,x-amz-security-token'"
         AllowOrigin: "'*'"
 
+  # Lambda Permissions for Bedrock Agent
+  AddDoctorProcedureBedrockPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref AddDoctorProcedureFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
+  GetQuoteBedrockPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref GetQuoteFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
+  ShowHistoryBedrockPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref ShowHistoryFunction
+      Action: lambda:InvokeFunction
+      Principal: bedrock.amazonaws.com
+      SourceAccount: !Ref AWS::AccountId
+
 Outputs:
   DoctorProceduresApi:
     Description: "API Gateway endpoint URL for dev stage"
