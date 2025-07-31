@@ -11,8 +11,11 @@ table = dynamodb.Table(TABLE_NAME)
 
 def lambda_handler(event, context):
     try:
+        # Check if this is a Bedrock Agent invocation
+        is_bedrock_agent = 'agent' in event or 'actionGroup' in event or ('httpMethod' not in event and 'body' not in event)
+        
         # Handle both direct invocation and API Gateway
-        if 'body' in event and event['body']:
+        if 'body' in event and event['body'] and not is_bedrock_agent:
             # API Gateway format
             request_body = json.loads(event['body'])
             doctor_name = request_body.get('doctorName')
@@ -21,7 +24,7 @@ def lambda_handler(event, context):
             cost = request_body.get('cost')
             time_str = request_body.get('time')
         else:
-            # Direct invocation (from Bedrock Agent)
+            # Direct invocation (from Bedrock Agent or direct call)
             doctor_name = event.get('doctorName')
             procedure_code = event.get('procedureCode')
             procedure_name = event.get('procedureName')
@@ -29,31 +32,43 @@ def lambda_handler(event, context):
             time_str = event.get('time')
 
         if not all([doctor_name, procedure_code, cost is not None]):
-            return {
-                'statusCode': 400,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'message': 'Missing required parameters: doctorName, procedureCode, and cost.'})
-            }
+            error_message = 'Missing required parameters: doctorName, procedureCode, and cost.'
+            if is_bedrock_agent:
+                return {'message': error_message}
+            else:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'message': error_message})
+                }
 
         try:
             cost = Decimal(str(cost))
         except (ValueError, TypeError):
-            return {
-                'statusCode': 400,
-                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                'body': json.dumps({'message': 'Cost must be a valid number.'})
-            }
+            error_message = 'Cost must be a valid number.'
+            if is_bedrock_agent:
+                return {'message': error_message}
+            else:
+                return {
+                    'statusCode': 400,
+                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                    'body': json.dumps({'message': error_message})
+                }
 
         # Handle time: use provided or current UTC
         if time_str:
             try:
                 logged_time = datetime.fromisoformat(time_str.replace('Z', '+00:00')).astimezone(timezone.utc).isoformat().replace('+00:00', 'Z')
             except ValueError:
-                return {
-                    'statusCode': 400,
-                    'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'message': 'Invalid time format. Use ISO 8601 (e.g., YYYY-MM-DDTHH:MM:SSZ).'})
-                }
+                error_message = 'Invalid time format. Use ISO 8601 (e.g., YYYY-MM-DDTHH:MM:SSZ).'
+                if is_bedrock_agent:
+                    return {'message': error_message}
+                else:
+                    return {
+                        'statusCode': 400,
+                        'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                        'body': json.dumps({'message': error_message})
+                    }
         else:
             logged_time = datetime.now(timezone.utc).isoformat().replace('+00:00', 'Z')
 
@@ -68,16 +83,33 @@ def lambda_handler(event, context):
 
         table.put_item(Item=item)
 
-        return {
-            'statusCode': 200,
-            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'message': f'Procedure "{procedure_name or procedure_code}" for Dr. {doctor_name} added successfully at {logged_time}.'})
-        }
+        success_message = f'Procedure "{procedure_name or procedure_code}" for Dr. {doctor_name} added successfully at {logged_time}.'
+        
+        if is_bedrock_agent:
+            return {
+                'message': success_message,
+                'doctorName': doctor_name,
+                'procedureCode': procedure_code,
+                'procedureName': procedure_name,
+                'cost': float(cost),
+                'timeLogged': logged_time
+            }
+        else:
+            return {
+                'statusCode': 200,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'message': success_message})
+            }
 
     except Exception as e:
         print(f"Error in addDoctorProcedureLambda: {e}")
-        return {
-            'statusCode': 500,
-            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-            'body': json.dumps({'message': f'Internal server error: {str(e)}'})
-        }
+        error_message = f'Internal server error: {str(e)}'
+        
+        if 'is_bedrock_agent' in locals() and is_bedrock_agent:
+            return {'message': error_message}
+        else:
+            return {
+                'statusCode': 500,
+                'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                'body': json.dumps({'message': error_message})
+            }
