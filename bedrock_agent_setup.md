@@ -80,24 +80,18 @@ After creating the agent, use the test interface to try these queries:
 
 ### Step 6: Get Agent Details
 After creation, note down:
-- **Agent ID** (e.g., `ABCD123456`)
-- **Agent Alias ID** (usually `TSTALIASID` for test alias)
+- **Agent ID**: `EBGEJR3FWL` (✅ Already configured)
+- **Agent Alias ID**: `TSTALIASID` (✅ Already configured)
+
+✅ **Status**: Your Bedrock Agent is now configured and working!
 
 ## 🔧 Update Your Application
 
-After creating the Bedrock Agent, update the environment variables:
+✅ **Already Completed**: Your Bedrock Agent is configured with:
+- **Agent ID**: `EBGEJR3FWL`
+- **Agent Alias ID**: `TSTALIASID`
 
-### Option 1: Update samconfig.toml
-Edit the parameter overrides in samconfig.toml:
-
-```toml
-parameter_overrides = "BedrockAgentId=\"YOUR_AGENT_ID\" BedrockAgentAliasId=\"YOUR_ALIAS_ID\""
-```
-
-### Option 2: Deploy with Parameters
-```bash
-sam deploy --parameter-overrides BedrockAgentId=YOUR_AGENT_ID BedrockAgentAliasId=YOUR_ALIAS_ID --profile vsc-sso --region us-east-1
-```
+The application has been deployed with these settings and is ready for testing!
 
 ## 🧪 Final Testing
 Once updated, test the intent mapper:
