@@ -118,6 +118,7 @@ curl -X POST https://jj6skt98b3.execute-api.us-east-1.amazonaws.com/dev/intent-m
 - The test alias is automatically created and sufficient for development
 
 ## 🔍 Troubleshooting
-- **Permission errors**: Ensure Lambda functions have proper IAM roles
-- **Schema validation**: Double-check OpenAPI schemas match your Lambda inputs
+- **Permission errors**: Ensure Lambda functions have proper IAM roles. If you get "Access denied while invoking Lambda function" error, make sure the latest deployment includes Bedrock permissions (✅ Already included in template.yaml)
+- **Schema validation**: Double-check OpenAPI schemas match your Lambda inputs and include description fields
 - **Agent not responding**: Wait 5-10 minutes after creation for full activation
+- **Lambda permissions**: The SAM template automatically creates the required Lambda permissions for Bedrock Agent access
