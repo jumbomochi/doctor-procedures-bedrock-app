@@ -1,0 +1,43 @@
+version: 0.1
+default:
+  global:
+    parameters:
+      stack_name: doctor-procedures-bedrock-app
+      s3_bucket: doctor-procedures-sam-deployments
+      s3_prefix: doctor-procedures-bedrock-app
+      region: us-east-1
+      confirm_changeset: true
+      capabilities: CAPABILITY_IAM
+      parameter_overrides: 
+        - BedrockAgentId=DUMMY_AGENT_ID
+        - BedrockAgentAliasId=TSTALIASID
+      image_repositories: []
+  build:
+    parameters:
+      cached: true
+      parallel: true
+  local_start_api:
+    parameters:
+      warm_containers: EAGER
+      debug: true
+      port: 3000
+  local_start_lambda:
+    parameters:
+      warm_containers: EAGER
+      debug: true
+  validate:
+    parameters:
+      lint: true
+  deploy:
+    parameters:
+      stack_name: doctor-procedures-bedrock-app
+      s3_bucket: doctor-procedures-sam-deployments
+      s3_prefix: doctor-procedures-bedrock-app
+      region: us-east-1
+      confirm_changeset: true
+      capabilities: CAPABILITY_IAM
+      parameter_overrides: 
+        - BedrockAgentId=DUMMY_AGENT_ID
+        - BedrockAgentAliasId=TSTALIASID
+      disable_rollback: true
+      image_repositories: []

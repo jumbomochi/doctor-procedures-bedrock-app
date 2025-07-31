@@ -1,0 +1,58 @@
+openapi: 3.0.0
+info:
+  title: AddDoctorProcedureService
+  version: '1.0'
+paths:
+  /addDoctorProcedure:
+    post:
+      summary: Logs a new medical procedure performed by a doctor, including its cost and time.
+      operationId: addDoctorProcedure
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - doctorName
+                - procedureCode
+                - cost
+              properties:
+                doctorName:
+                  type: string
+                  description: The full name of the doctor (e.g., "Dr. Alice Smith").
+                procedureCode:
+                  type: string
+                  description: A unique code identifying the type of procedure (e.g., "CONSULT001", "PROC005").
+                procedureName:
+                  type: string
+                  description: A human-readable name for the procedure (e.g., "Initial Consultation", "Minor Surgery").
+                  nullable: true
+                cost:
+                  type: number
+                  format: float
+                  description: The monetary cost associated with this procedure.
+                time:
+                  type: string
+                  format: date-time
+                  description: The timestamp when the procedure was logged, in ISO 8601 format (e.g., "2025-07-30T10:30:00Z"). If not provided, the current UTC time will be used.
+                  nullable: true
+      responses:
+        '200':
+          description: Procedure successfully added.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '400':
+          description: Invalid input parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string

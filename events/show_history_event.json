@@ -1,0 +1,6 @@
+{
+  "queryStringParameters": {
+    "doctorName": "Dr. Alice Smith",
+    "limit": "5"
+  }
+}

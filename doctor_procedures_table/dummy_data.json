@@ -1,0 +1,34 @@
+[
+  {
+    "DoctorName": "Dr. Alice Smith",
+    "ProcedureTime": "2025-07-30T09:00:00Z",
+    "procedure_code": "CONSULT001",
+    "procedure_name": "Initial Consultation",
+    "cost": 150.00,
+    "time_logged": "2025-07-30T09:00:00Z"
+  },
+  {
+    "DoctorName": "Dr. Bob Johnson",
+    "ProcedureTime": "2025-07-30T10:30:00Z",
+    "procedure_code": "PROC005",
+    "procedure_name": "Minor Surgery",
+    "cost": 800.00,
+    "time_logged": "2025-07-30T10:30:00Z"
+  },
+  {
+    "DoctorName": "Dr. Alice Smith",
+    "ProcedureTime": "2025-07-30T14:15:00Z",
+    "procedure_code": "CONSULT001",
+    "procedure_name": "Initial Consultation",
+    "cost": 150.00,
+    "time_logged": "2025-07-30T14:15:00Z"
+  },
+  {
+    "DoctorName": "Dr. Carol Wilson",
+    "ProcedureTime": "2025-07-31T08:45:00Z",
+    "procedure_code": "PROC010",
+    "procedure_name": "Physical Therapy Session",
+    "cost": 75.00,
+    "time_logged": "2025-07-31T08:45:00Z"
+  }
+]

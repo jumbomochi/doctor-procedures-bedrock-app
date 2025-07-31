@@ -1,0 +1,7 @@
+{
+  "doctorName": "Dr. Alice Smith",
+  "procedureCode": "CONSULT001",
+  "procedureName": "Initial Consultation",
+  "cost": 150.00,
+  "time": "2025-07-31T10:30:00Z"
+}

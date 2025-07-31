@@ -1,0 +1,72 @@
+openapi: 3.0.0
+info:
+  title: DoctorHistoryService
+  version: '1.0'
+paths:
+  /showHistory:
+    get:
+      summary: Shows the recent procedure history and total cost for a specific doctor.
+      operationId: showHistory
+      parameters:
+        - name: doctorName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The full name of the doctor (e.g., "Dr. Alice Smith").
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 5
+          description: The maximum number of recent procedures to show. Defaults to 5.
+        - name: startDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: The start date (inclusive) for filtering the history, in ISO 8601 format (e.g., "2025-07-01T00:00:00Z").
+        - name: endDate
+          in: query
+          required: false
+          schema:
+            type: string
+            format: date-time
+          description: The end date (inclusive) for filtering the history, in ISO 8601 format (e.g., "2025-07-31T23:59:59Z").
+      responses:
+        '200':
+          description: Procedure history retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  history:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        procedure:
+                          type: string
+                        time:
+                          type: string
+                          format: date-time
+                        cost:
+                          type: number
+                          format: float
+                  totalCost:
+                    type: number
+                    format: float
+        '404':
+          description: No history found for the specified doctor or date range.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string

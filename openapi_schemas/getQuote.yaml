@@ -1,0 +1,40 @@
+openapi: 3.0.0
+info:
+  title: ProcedureQuoteService
+  version: '1.0'
+paths:
+  /getQuote:
+    get:
+      summary: Retrieves the estimated cost for a specific medical procedure code.
+      operationId: getQuote
+      parameters:
+        - name: procedureCode
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The unique code identifying the procedure (e.g., "CONSULT001", "PROC005").
+      responses:
+        '200':
+          description: Estimated cost retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  procedureCode:
+                    type: string
+                  estimatedCost:
+                    type: number
+                    format: float
+        '404':
+          description: Procedure code not found.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
