@@ -6,6 +6,7 @@ paths:
   /showHistory:
     get:
       summary: Shows the recent procedure history and total cost for a specific doctor.
+      description: Retrieve the procedure history for a doctor with optional date filtering and result limiting.
       operationId: showHistory
       parameters:
         - name: doctorName

@@ -6,6 +6,7 @@ paths:
   /getQuote:
     get:
       summary: Retrieves the estimated cost for a specific medical procedure code.
+      description: Get the average cost estimate for a procedure based on historical data from the database.
       operationId: getQuote
       parameters:
         - name: procedureCode

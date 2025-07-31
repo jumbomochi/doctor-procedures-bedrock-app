@@ -6,6 +6,7 @@ paths:
   /addDoctorProcedure:
     post:
       summary: Logs a new medical procedure performed by a doctor, including its cost and time.
+      description: Add a new medical procedure to the database with doctor information, procedure details, and cost.
       operationId: addDoctorProcedure
       requestBody:
         required: true
