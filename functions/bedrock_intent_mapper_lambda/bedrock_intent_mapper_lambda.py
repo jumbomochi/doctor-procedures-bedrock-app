@@ -1,10 +1,19 @@
 import json
 import boto3
 import os
+import time
+from botocore.exceptions import ClientError
 
+# Configure boto3 with retry configuration
 bedrock_agent_runtime = boto3.client(
     service_name='bedrock-agent-runtime',
-    region_name=os.environ.get('AWS_REGION', 'us-east-1') # Ensure your Bedrock Agent region
+    region_name=os.environ.get('AWS_REGION', 'us-east-1'),
+    config=boto3.session.Config(
+        retries={
+            'max_attempts': 3,
+            'mode': 'adaptive'
+        }
+    )
 )
 
 # Get agent details from environment variables
@@ -42,13 +51,41 @@ def lambda_handler(event, context):
 
         print(f"Invoking Bedrock Agent with text: '{user_text}' for session: '{session_id}'")
 
-        # 2. Invoke the Bedrock Agent
-        response = bedrock_agent_runtime.invoke_agent(
-            agentId=AGENT_ID,
-            agentAliasId=AGENT_ALIAS_ID,
-            sessionId=session_id,
-            inputText=user_text
-        )
+        # 2. Invoke the Bedrock Agent with retry logic for rate limiting
+        max_retries = 3
+        base_delay = 1  # Start with 1 second delay
+        
+        for attempt in range(max_retries):
+            try:
+                response = bedrock_agent_runtime.invoke_agent(
+                    agentId=AGENT_ID,
+                    agentAliasId=AGENT_ALIAS_ID,
+                    sessionId=session_id,
+                    inputText=user_text
+                )
+                break  # Success, exit retry loop
+                
+            except ClientError as e:
+                error_code = e.response.get('Error', {}).get('Code', '')
+                
+                if error_code in ['ThrottlingException', 'TooManyRequestsException']:
+                    if attempt < max_retries - 1:  # Don't wait on the last attempt
+                        delay = base_delay * (2 ** attempt)  # Exponential backoff
+                        print(f"Rate limit hit, retrying in {delay} seconds... (attempt {attempt + 1}/{max_retries})")
+                        time.sleep(delay)
+                        continue
+                    else:
+                        return {
+                            'statusCode': 429,
+                            'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
+                            'body': json.dumps({
+                                'message': 'Bedrock Agent rate limit exceeded. Please try again in a few minutes.',
+                                'error': 'RATE_LIMIT_EXCEEDED'
+                            })
+                        }
+                else:
+                    # Re-raise non-rate-limit errors
+                    raise e
 
         # 3. Process the streaming response from invoke_agent
         # Bedrock Agent responses come as a stream of chunks.
