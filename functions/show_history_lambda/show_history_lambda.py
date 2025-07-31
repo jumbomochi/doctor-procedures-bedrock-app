@@ -12,8 +12,18 @@ table = dynamodb.Table(TABLE_NAME)
 
 def lambda_handler(event, context):
     try:
-        # Check if this is a Bedrock Agent invocation
-        is_bedrock_agent = 'agent' in event or 'actionGroup' in event or ('httpMethod' not in event and 'queryStringParameters' not in event)
+        # Debug: print the event to understand Bedrock Agent invocation format
+        print(f"Event received: {json.dumps(event)}")
+        
+        # Improved Bedrock Agent detection
+        is_bedrock_agent = (
+            'httpMethod' not in event and 
+            'queryStringParameters' not in event and
+            'requestContext' not in event and
+            ('doctorName' in event or 'procedureCode' in event)
+        )
+        
+        print(f"Detected Bedrock Agent: {is_bedrock_agent}")
         
         # Handle API Gateway query parameters vs direct parameters
         if 'queryStringParameters' in event and event['queryStringParameters'] and not is_bedrock_agent:
