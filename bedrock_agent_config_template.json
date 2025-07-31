@@ -1,0 +1,42 @@
+{
+  "agent": {
+    "name": "DoctorProceduresAgent",
+    "description": "AI agent for managing doctor procedures, cost estimates, and procedure history",
+    "foundationModel": "claude-3-haiku",
+    "instructions": "You are a helpful assistant for managing doctor procedures and cost estimates. You can: 1) Add new medical procedures for doctors with procedure codes and costs, 2) Provide cost estimates for specific procedure codes, 3) Show procedure history for doctors with optional date filtering. When users ask about adding procedures, use the AddDoctorProcedure action. When users ask about costs or quotes, use the GetQuote action. When users ask about history or past procedures, use the ShowHistory action. Always be helpful and provide clear, concise responses about medical procedure management.",
+    "actionGroups": [
+      {
+        "name": "AddDoctorProcedureGroup",
+        "description": "Add new medical procedures to the database",
+        "lambdaFunction": "doctor-procedures-bedrock-AddDoctorProcedureFuncti-iew26y2xQ11H",
+        "schemaFile": "openapi_schemas/addDoctorProcedure.yaml"
+      },
+      {
+        "name": "GetQuoteGroup", 
+        "description": "Get cost estimates for procedure codes",
+        "lambdaFunction": "doctor-procedures-bedrock-app-GetQuoteFunction-weEztYJpLinp",
+        "schemaFile": "openapi_schemas/getQuote.yaml"
+      },
+      {
+        "name": "ShowHistoryGroup",
+        "description": "Show procedure history for doctors", 
+        "lambdaFunction": "doctor-procedures-bedrock-app-ShowHistoryFunction-6ri533GOJGz3",
+        "schemaFile": "openapi_schemas/showHistory.yaml"
+      }
+    ]
+  },
+  "deployment": {
+    "agentId": "REPLACE_WITH_YOUR_AGENT_ID",
+    "aliasId": "REPLACE_WITH_YOUR_ALIAS_ID",
+    "region": "us-east-1",
+    "apiEndpoint": "https://jj6skt98b3.execute-api.us-east-1.amazonaws.com/dev/intent-mapper"
+  },
+  "testQueries": [
+    "Add a consultation for Dr. Smith with code CONSULT001 that costs $150",
+    "What is the average cost for procedure code CONSULT001?",
+    "Show me the procedure history for Dr. Smith",
+    "Add a physical exam for Dr. Johnson with code PHYS001 costing $200",
+    "How much does a PHYS001 procedure typically cost?",
+    "Can you show Dr. Johnson's recent procedures?"
+  ]
+}

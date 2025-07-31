@@ -69,3 +69,4 @@ yarn-error.log*
 
 # Bedrock Agent specific
 agent_config.json
+bedrock_agent_config_actual.json
