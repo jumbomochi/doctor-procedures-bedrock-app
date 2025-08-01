@@ -1,0 +1,28 @@
+{
+  "agent": {
+    "name": "DoctorProceduresBedrockAgent",
+    "version": "1.0.0",
+    "id": "EBGEJR3FWL"
+  },
+  "actionGroup": "GetQuoteGroup",
+  "apiPath": "/getQuote",
+  "httpMethod": "GET",
+  "messageVersion": "1.0",
+  "parameters": [
+    {
+      "name": "doctorName",
+      "type": "string",
+      "value": "Dr. Sarah Johnson"
+    },
+    {
+      "name": "procedureCode",
+      "type": "string", 
+      "value": "CONS001"
+    }
+  ],
+  "requestBody": {
+    "content": {}
+  },
+  "sessionAttributes": {},
+  "promptSessionAttributes": {}
+}

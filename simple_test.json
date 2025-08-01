@@ -1,0 +1,6 @@
+{
+  "queryStringParameters": {
+    "doctorName": "Dr. Sarah Johnson",
+    "procedureCode": "CONS001"
+  }
+}
