@@ -41,6 +41,7 @@ def lambda_handler(event, context):
         request_body = json.loads(event['body'])
         user_text = request_body.get('text')
         session_id = request_body.get('sessionId', context.aws_request_id) # Use AWS request ID as a default session ID
+        conversation_history = request_body.get('conversationHistory', [])
 
         if not user_text:
             return {
@@ -49,7 +50,21 @@ def lambda_handler(event, context):
                 'body': json.dumps({'message': 'Text input is required in the request body.'})
             }
 
-        print(f"Invoking Bedrock Agent with text: '{user_text}' for session: '{session_id}'")
+        # Build context-aware prompt if we have conversation history
+        enhanced_prompt = user_text
+        if conversation_history:
+            # Create a summary of recent context
+            recent_context = conversation_history[-6:]  # Last 3 exchanges (6 messages)
+            context_summary = "Previous conversation context:\n"
+            for msg in recent_context:
+                role = "User" if msg.get('role') == 'user' else "Assistant"
+                content = msg.get('content', '')[:200]  # Limit to 200 chars per message
+                context_summary += f"{role}: {content}\n"
+            
+            enhanced_prompt = f"{context_summary}\nCurrent question: {user_text}"
+            print(f"Enhanced prompt with context: {enhanced_prompt[:500]}...")  # Log first 500 chars
+
+        print(f"Invoking Bedrock Agent with text: '{user_text}' for session: '{session_id}' with {len(conversation_history)} context messages")
 
         # 2. Invoke the Bedrock Agent with retry logic for rate limiting
         max_retries = 3
@@ -61,7 +76,7 @@ def lambda_handler(event, context):
                     agentId=AGENT_ID,
                     agentAliasId=AGENT_ALIAS_ID,
                     sessionId=session_id,
-                    inputText=user_text
+                    inputText=enhanced_prompt
                 )
                 break  # Success, exit retry loop
                 
@@ -97,6 +112,16 @@ def lambda_handler(event, context):
 
         print(f"Bedrock Agent Response: {completion}")
 
+        # Determine if this was a successful intent mapping or general conversation
+        # This is a simple heuristic - you might want to enhance this based on your specific needs
+        intent_mapped = True
+        if any(phrase in completion.lower() for phrase in [
+            "i don't understand", "i'm not sure", "could you clarify", 
+            "i don't have enough information", "i'm not able to", 
+            "sorry, i don't", "i can't", "that's not something i can"
+        ]):
+            intent_mapped = False
+        
         # 4. Format the response for API Gateway
         return {
             'statusCode': 200,
@@ -106,7 +131,10 @@ def lambda_handler(event, context):
             },
             'body': json.dumps({
                 'response': completion,
-                'sessionId': session_id
+                'sessionId': session_id,
+                'intentMapped': intent_mapped,
+                'contextUsed': len(conversation_history) > 0,
+                'originalMessage': user_text
             })
         }
 

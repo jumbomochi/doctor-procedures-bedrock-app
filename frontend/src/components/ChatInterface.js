@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Bot, User, AlertCircle, CheckCircle } from 'lucide-react';
+import { Send, Bot, User, AlertCircle, CheckCircle, Trash2 } from 'lucide-react';
 import { apiClient } from '../api';
 
 const ChatInterface = () => {
@@ -14,6 +14,7 @@ const ChatInterface = () => {
   const [inputMessage, setInputMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [sessionId] = useState(`session-${Date.now()}`);
+  const [conversationHistory, setConversationHistory] = useState([]);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -35,21 +36,49 @@ const ChatInterface = () => {
     };
 
     setMessages(prev => [...prev, userMessage]);
+    
+    // Add user message to conversation history for context
+    const updatedHistory = [
+      ...conversationHistory,
+      { role: 'user', content: inputMessage, timestamp: new Date().toISOString() }
+    ];
+    setConversationHistory(updatedHistory);
+    
     setInputMessage('');
     setIsLoading(true);
 
     try {
-      const response = await apiClient.chatWithAgent(inputMessage, sessionId);
+      const response = await apiClient.chatWithAgent(inputMessage, sessionId, updatedHistory);
       
       const botMessage = {
         id: Date.now() + 1,
         type: 'bot',
         content: response.response || response.message || 'I received your request, but got an unexpected response format.',
         timestamp: new Date(),
-        success: true
+        success: true,
+        intentMapped: response.intentMapped !== false, // Track if intent was mapped
+        rawResponse: response // Store full response for debugging
       };
 
       setMessages(prev => [...prev, botMessage]);
+      
+      // Add bot response to conversation history for context
+      const finalHistory = [
+        ...updatedHistory,
+        { 
+          role: 'assistant', 
+          content: botMessage.content, 
+          timestamp: new Date().toISOString(),
+          intentMapped: botMessage.intentMapped 
+        }
+      ];
+      setConversationHistory(finalHistory);
+      
+      // Limit conversation history to last 20 exchanges (40 entries) to prevent payload from getting too large
+      if (finalHistory.length > 40) {
+        setConversationHistory(finalHistory.slice(-40));
+      }
+      
     } catch (error) {
       const errorMessage = {
         id: Date.now() + 1,
@@ -60,6 +89,8 @@ const ChatInterface = () => {
       };
 
       setMessages(prev => [...prev, errorMessage]);
+      
+      // Don't add error messages to conversation history
     } finally {
       setIsLoading(false);
     }
@@ -76,14 +107,42 @@ const ChatInterface = () => {
     return timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
 
+  const clearConversationContext = () => {
+    setConversationHistory([]);
+    // Optionally add a system message to indicate context was cleared
+    const contextClearedMessage = {
+      id: Date.now(),
+      type: 'bot',
+      content: '🔄 Conversation context has been cleared. I\'ll start fresh with your next question.',
+      timestamp: new Date(),
+      success: true
+    };
+    setMessages(prev => [...prev, contextClearedMessage]);
+  };
+
   return (
     <div className="flex flex-col h-full bg-white rounded-lg card-shadow border border-maroon-100">
       {/* Header */}
       <div className="flex items-center p-4 bg-maroon-600 text-white rounded-t-lg maroon-shadow">
         <Bot className="w-6 h-6 mr-2" />
         <h2 className="text-lg font-semibold">AI Assistant</h2>
-        <div className="ml-auto text-sm opacity-75">
-          Session: {sessionId.slice(-8)}
+        <div className="ml-auto flex items-center space-x-4">
+          {conversationHistory.length > 0 && (
+            <button
+              onClick={clearConversationContext}
+              className="px-2 py-1 bg-maroon-700 hover:bg-maroon-800 rounded text-xs flex items-center space-x-1 transition-colors"
+              title="Clear conversation context"
+            >
+              <Trash2 className="w-3 h-3" />
+              <span>Clear Context</span>
+            </button>
+          )}
+          <div className="text-sm opacity-75">
+            Context: {conversationHistory.length} messages
+          </div>
+          <div className="text-sm opacity-75">
+            Session: {sessionId.slice(-8)}
+          </div>
         </div>
       </div>
 
@@ -98,12 +157,17 @@ const ChatInterface = () => {
           >
             {message.type === 'bot' && (
               <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center ${
-                message.error ? 'bg-error-100' : message.success ? 'bg-success-100' : 'bg-maroon-100'
+                message.error ? 'bg-red-100' : 
+                message.success ? 'bg-green-100' : 
+                message.intentMapped === false ? 'bg-yellow-100' :
+                'bg-maroon-100'
               }`}>
                 {message.error ? (
-                  <AlertCircle className="w-4 h-4 text-error-600" />
+                  <AlertCircle className="w-4 h-4 text-red-600" />
                 ) : message.success ? (
-                  <CheckCircle className="w-4 h-4 text-success-600" />
+                  <CheckCircle className="w-4 h-4 text-green-600" />
+                ) : message.intentMapped === false ? (
+                  <Bot className="w-4 h-4 text-yellow-600" />
                 ) : (
                   <Bot className="w-4 h-4 text-maroon-600" />
                 )}
@@ -114,10 +178,24 @@ const ChatInterface = () => {
               message.type === 'user'
                 ? 'bg-maroon-600 text-white maroon-shadow'
                 : message.error
-                ? 'bg-error-50 text-error-800 border border-error-200'
+                ? 'bg-red-50 text-red-800 border border-red-200 error-message'
+                : message.intentMapped === false
+                ? 'bg-yellow-50 text-yellow-800 border border-yellow-200 intent-unmapped'
+                : message.success
+                ? 'bg-maroon-50 text-maroon-800 border border-maroon-100 intent-mapped'
                 : 'bg-maroon-50 text-maroon-800 border border-maroon-100'
             }`}>
               <div className="whitespace-pre-wrap text-sm">{message.content}</div>
+              {message.intentMapped === false && (
+                <div className="text-xs mt-2 p-2 bg-yellow-100 rounded border-yellow-300 border">
+                  💭 <em>General conversation - maintaining context for future questions</em>
+                </div>
+              )}
+              {message.success && message.intentMapped !== false && (
+                <div className="text-xs mt-2 p-2 bg-green-100 rounded border-green-300 border">
+                  ✅ <em>Intent recognized and processed</em>
+                </div>
+              )}
               <div className={`text-xs mt-1 opacity-75 ${
                 message.type === 'user' ? 'text-maroon-100' : 'text-maroon-500'
               }`}>
@@ -171,8 +249,13 @@ const ChatInterface = () => {
             <Send className="w-4 h-4" />
           </button>
         </div>
-        <div className="text-xs text-maroon-500 mt-2">
-          Press Enter to send, Shift+Enter for new line
+        <div className="text-xs text-maroon-500 mt-2 flex items-center justify-between">
+          <span>Press Enter to send, Shift+Enter for new line</span>
+          {conversationHistory.length > 0 && (
+            <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">
+              🧠 Context: {conversationHistory.length} messages stored
+            </span>
+          )}
         </div>
       </div>
     </div>

@@ -27,11 +27,12 @@ class APIClient {
   }
 
   // Chat with Bedrock Agent
-  async chatWithAgent(message, sessionId = 'frontend-session') {
+  async chatWithAgent(message, sessionId = 'frontend-session', conversationHistory = []) {
     try {
       const response = await this.client.post('/intent-mapper', {
         text: message,
-        sessionId: sessionId
+        sessionId: sessionId,
+        conversationHistory: conversationHistory
       });
       return response.data;
     } catch (error) {

@@ -64,3 +64,33 @@
 .text-maroon-secondary { color: #a0142a; }
 .border-maroon-primary { border-color: #800020; }
 .border-maroon-light { border-color: rgba(128, 0, 32, 0.2); }
+
+/* Context indicator styles */
+.context-indicator {
+  position: relative;
+}
+
+.context-indicator::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 100%;
+  background: linear-gradient(to bottom, #fbbf24, #f59e0b);
+  border-radius: 2px;
+}
+
+/* Intent mapping indicators */
+.intent-mapped {
+  border-left: 3px solid #10b981;
+}
+
+.intent-unmapped {
+  border-left: 3px solid #f59e0b;
+}
+
+.error-message {
+  border-left: 3px solid #ef4444;
+}
