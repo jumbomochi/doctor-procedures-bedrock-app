@@ -5,19 +5,25 @@ info:
 paths:
   /getQuote:
     get:
-      summary: Retrieves the estimated cost for a specific medical procedure code.
-      description: Get the average cost estimate for a procedure based on historical data from the database.
+      summary: Retrieves the median cost for a specific medical procedure by a specific doctor.
+      description: Get the median cost estimate for a procedure based on historical data from a specific doctor in the database.
       operationId: getQuote
       parameters:
+        - name: doctorName
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The name of the doctor (e.g., "Dr. Sarah Johnson", "Dr. Michael Chen").
         - name: procedureCode
           in: query
           required: true
           schema:
             type: string
-          description: The unique code identifying the procedure (e.g., "CONSULT001", "PROC005").
+          description: The unique code identifying the procedure (e.g., "CONS001", "SURG001").
       responses:
         '200':
-          description: Estimated cost retrieved successfully.
+          description: Median cost retrieved successfully.
           content:
             application/json:
               schema:
@@ -25,13 +31,37 @@ paths:
                 properties:
                   message:
                     type: string
+                  doctorName:
+                    type: string
                   procedureCode:
                     type: string
-                  estimatedCost:
+                  procedureName:
+                    type: string
+                  medianCost:
                     type: number
                     format: float
+                  sampleCount:
+                    type: integer
+                  costRange:
+                    type: object
+                    properties:
+                      min:
+                        type: number
+                        format: float
+                      max:
+                        type: number
+                        format: float
+        '400':
+          description: Missing required parameters.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
         '404':
-          description: Procedure code not found.
+          description: No procedures found for the specified doctor and procedure code.
           content:
             application/json:
               schema:

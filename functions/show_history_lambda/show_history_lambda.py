@@ -15,33 +15,49 @@ def lambda_handler(event, context):
         # Debug: print the event to understand Bedrock Agent invocation format
         print(f"Event received: {json.dumps(event)}")
         
-        # Improved Bedrock Agent detection
+        # Detect Bedrock Agent by checking for agent and parameters structure
         is_bedrock_agent = (
-            'httpMethod' not in event and 
-            'queryStringParameters' not in event and
-            'requestContext' not in event and
-            ('doctorName' in event or 'procedureCode' in event)
+            'agent' in event and 
+            'actionGroup' in event and 
+            'parameters' in event and
+            'messageVersion' in event
         )
         
         print(f"Detected Bedrock Agent: {is_bedrock_agent}")
         
-        # Handle API Gateway query parameters vs direct parameters
-        if 'queryStringParameters' in event and event['queryStringParameters'] and not is_bedrock_agent:
+        # Handle Bedrock Agent parameters vs API Gateway parameters
+        if is_bedrock_agent:
+            # Extract parameters from Bedrock Agent event
+            parameters = {param['name']: param['value'] for param in event.get('parameters', [])}
+            doctor_name = parameters.get('doctorName')
+            limit = parameters.get('limit', 5)
+            start_date = parameters.get('startDate')
+            end_date = parameters.get('endDate')
+        else:
+            # Handle API Gateway query parameters
             query_params = event.get('queryStringParameters') or {}
             doctor_name = query_params.get('doctorName')
             limit = query_params.get('limit', 5)
             start_date = query_params.get('startDate')
             end_date = query_params.get('endDate')
-        else:
-            doctor_name = event.get('doctorName')
-            limit = event.get('limit', 5)
-            start_date = event.get('startDate')
-            end_date = event.get('endDate')
 
         if not doctor_name:
             error_message = 'Missing required parameter: doctorName.'
             if is_bedrock_agent:
-                return {'message': error_message}
+                return {
+                    'messageVersion': '1.0',
+                    'response': {
+                        'actionGroup': event.get('actionGroup', 'ShowHistoryGroup'),
+                        'apiPath': event.get('apiPath', '/showHistory'),
+                        'httpMethod': event.get('httpMethod', 'GET'),
+                        'httpStatusCode': 400,
+                        'responseBody': {
+                            'application/json': {
+                                'body': json.dumps({'message': error_message})
+                            }
+                        }
+                    }
+                }
             else:
                 return {
                     'statusCode': 400,
@@ -64,7 +80,20 @@ def lambda_handler(event, context):
             except ValueError:
                 error_message = 'Invalid startDate format. Use ISO 8601 (e.g., YYYY-MM-DDTHH:MM:SSZ).'
                 if is_bedrock_agent:
-                    return {'message': error_message}
+                    return {
+                        'messageVersion': '1.0',
+                        'response': {
+                            'actionGroup': event.get('actionGroup', 'ShowHistoryGroup'),
+                            'apiPath': event.get('apiPath', '/showHistory'),
+                            'httpMethod': event.get('httpMethod', 'GET'),
+                            'httpStatusCode': 400,
+                            'responseBody': {
+                                'application/json': {
+                                    'body': json.dumps({'message': error_message})
+                                }
+                            }
+                        }
+                    }
                 else:
                     return {
                         'statusCode': 400,
@@ -96,7 +125,20 @@ def lambda_handler(event, context):
         if not items:
             error_message = f'No procedure history found for Dr. {doctor_name}.'
             if is_bedrock_agent:
-                return {'message': error_message}
+                return {
+                    'messageVersion': '1.0',
+                    'response': {
+                        'actionGroup': event.get('actionGroup', 'ShowHistoryGroup'),
+                        'apiPath': event.get('apiPath', '/showHistory'),
+                        'httpMethod': event.get('httpMethod', 'GET'),
+                        'httpStatusCode': 404,
+                        'responseBody': {
+                            'application/json': {
+                                'body': json.dumps({'message': error_message})
+                            }
+                        }
+                    }
+                }
             else:
                 return {
                     'statusCode': 404,
@@ -121,11 +163,24 @@ def lambda_handler(event, context):
         
         if is_bedrock_agent:
             return {
-                'message': message,
-                'doctorName': doctor_name,
-                'procedureCount': len(history),
-                'totalCost': total_cost,
-                'history': history
+                'messageVersion': '1.0',
+                'response': {
+                    'actionGroup': event.get('actionGroup', 'ShowHistoryGroup'),
+                    'apiPath': event.get('apiPath', '/showHistory'),
+                    'httpMethod': event.get('httpMethod', 'GET'),
+                    'httpStatusCode': 200,
+                    'responseBody': {
+                        'application/json': {
+                            'body': json.dumps({
+                                'message': message,
+                                'doctorName': doctor_name,
+                                'procedureCount': len(history),
+                                'totalCost': total_cost,
+                                'history': history
+                            })
+                        }
+                    }
+                }
             }
         else:
             return {
@@ -143,7 +198,20 @@ def lambda_handler(event, context):
         error_message = f'Internal server error: {str(e)}'
         
         if 'is_bedrock_agent' in locals() and is_bedrock_agent:
-            return {'message': error_message}
+            return {
+                'messageVersion': '1.0',
+                'response': {
+                    'actionGroup': event.get('actionGroup', 'ShowHistoryGroup'),
+                    'apiPath': event.get('apiPath', '/showHistory'),
+                    'httpMethod': event.get('httpMethod', 'GET'),
+                    'httpStatusCode': 500,
+                    'responseBody': {
+                        'application/json': {
+                            'body': json.dumps({'message': error_message})
+                        }
+                    }
+                }
+            }
         else:
             return {
                 'statusCode': 500,

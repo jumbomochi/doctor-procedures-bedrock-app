@@ -1,0 +1,66 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom styles with white and maroon theme */
+.glass-effect {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(128, 0, 32, 0.1);
+  box-shadow: 0 4px 15px rgba(128, 0, 32, 0.1);
+}
+
+.gradient-bg {
+  background: linear-gradient(135deg, #ffffff 0%, #f8f5f5 50%, #800020 100%);
+}
+
+.maroon-gradient {
+  background: linear-gradient(135deg, #800020 0%, #a0142a 50%, #c41e3a 100%);
+}
+
+.card-shadow {
+  box-shadow: 0 10px 25px rgba(128, 0, 32, 0.15), 0 4px 10px rgba(128, 0, 32, 0.08);
+}
+
+.maroon-shadow {
+  box-shadow: 0 6px 20px rgba(128, 0, 32, 0.2), 0 2px 8px rgba(128, 0, 32, 0.1);
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.chat-message {
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Maroon theme utilities */
+.bg-maroon-primary { background-color: #800020; }
+.bg-maroon-secondary { background-color: #a0142a; }
+.bg-maroon-light { background-color: #f8f5f5; }
+.text-maroon-primary { color: #800020; }
+.text-maroon-secondary { color: #a0142a; }
+.border-maroon-primary { border-color: #800020; }
+.border-maroon-light { border-color: rgba(128, 0, 32, 0.2); }
