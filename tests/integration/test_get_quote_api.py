@@ -12,8 +12,8 @@ def test_get_quote_specific_procedure():
     
     url = f"{BASE_URL}/get-quote"
     params = {
-        'doctorName': 'Dr. Alice Smith',
-        'procedureCode': 'CONSULT001'
+        'doctorName': 'Sarah Johnson',
+        'procedureCode': 'CONS001'
     }
     
     response = requests.get(url, params=params)
@@ -37,7 +37,7 @@ def test_get_quote_all_procedures():
     
     url = f"{BASE_URL}/get-quote"
     params = {
-        'doctorName': 'Dr. Alice Smith'
+        'doctorName': 'Sarah Johnson'
         # No procedureCode parameter
     }
     

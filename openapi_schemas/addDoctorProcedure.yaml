@@ -21,7 +21,7 @@ paths:
               properties:
                 doctorName:
                   type: string
-                  description: The full name of the doctor (e.g., "Dr. Alice Smith").
+                  description: The full name of the doctor (e.g., "Alice Smith").
                 procedureCode:
                   type: string
                   description: A unique code identifying the type of procedure (e.g., "CONSULT001", "PROC005").

@@ -21,10 +21,10 @@ table = dynamodb.Table(TABLE_NAME)
 
 # Sample data pools
 DOCTORS = [
-    'Dr. Sarah Johnson', 'Dr. Michael Chen', 'Dr. Emily Rodriguez', 'Dr. James Wilson',
-    'Dr. Lisa Thompson', 'Dr. David Kim', 'Dr. Rachel Green', 'Dr. Mark Davis',
-    'Dr. Jennifer Lee', 'Dr. Robert Brown', 'Dr. Amanda Martinez', 'Dr. Christopher Taylor',
-    'Dr. Michelle White', 'Dr. Andrew Garcia', 'Dr. Nicole Anderson', 'Dr. Kevin Thomas'
+    'Sarah Johnson', 'Michael Chen', 'Emily Rodriguez', 'James Wilson',
+    'Lisa Thompson', 'David Kim', 'Rachel Green', 'Mark Davis',
+    'Jennifer Lee', 'Robert Brown', 'Amanda Martinez', 'Christopher Taylor',
+    'Michelle White', 'Andrew Garcia', 'Nicole Anderson', 'Kevin Thomas'
 ]
 
 # Medical procedure codes with base costs and variations

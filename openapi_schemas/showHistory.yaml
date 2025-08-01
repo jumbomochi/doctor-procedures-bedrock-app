@@ -14,7 +14,7 @@ paths:
           required: true
           schema:
             type: string
-          description: The full name of the doctor (e.g., "Dr. Alice Smith").
+          description: The full name of the doctor (e.g., "Alice Smith").
         - name: limit
           in: query
           required: false
