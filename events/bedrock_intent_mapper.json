@@ -1,6 +1,0 @@
-{
-  "body": "{\"text\": \"Add a consultation for Dr. Smith with code CONSULT001 that costs $150\", \"sessionId\": \"test-session-123\"}",
-  "headers": {
-    "Content-Type": "application/json"
-  }
-}
