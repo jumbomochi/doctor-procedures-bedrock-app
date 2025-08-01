@@ -5,8 +5,8 @@ info:
 paths:
   /getQuote:
     get:
-      summary: Retrieves the median cost for a specific medical procedure by a specific doctor.
-      description: Get the median cost estimate for a procedure based on historical data from a specific doctor in the database.
+      summary: Retrieves the median cost for medical procedures by a specific doctor.
+      description: Get the median cost estimate based on historical data from a specific doctor. If procedureCode is provided, returns median for that specific procedure. If procedureCode is omitted, returns median for all procedures by the doctor.
       operationId: getQuote
       parameters:
         - name: doctorName
@@ -17,10 +17,10 @@ paths:
           description: The name of the doctor (e.g., "Dr. Sarah Johnson", "Dr. Michael Chen").
         - name: procedureCode
           in: query
-          required: true
+          required: false
           schema:
             type: string
-          description: The unique code identifying the procedure (e.g., "CONS001", "SURG001").
+          description: Optional. The unique code identifying a specific procedure (e.g., "CONS001", "SURG001"). If omitted, returns median for all procedures by the doctor.
       responses:
         '200':
           description: Median cost retrieved successfully.

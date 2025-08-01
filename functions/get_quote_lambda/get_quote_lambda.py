@@ -30,22 +30,16 @@ def lambda_handler(event, context):
             # Extract parameters from Bedrock Agent event
             parameters = {param['name']: param['value'] for param in event.get('parameters', [])}
             doctor_name = parameters.get('doctorName')
-            procedure_code = parameters.get('procedureCode')
+            procedure_code = parameters.get('procedureCode')  # Optional
         else:
             # Handle API Gateway query parameters
             query_params = event.get('queryStringParameters') or {}
             doctor_name = query_params.get('doctorName')
-            procedure_code = query_params.get('procedureCode')
+            procedure_code = query_params.get('procedureCode')  # Optional
 
-        # Validate required parameters
-        if not doctor_name or not procedure_code:
-            missing_params = []
-            if not doctor_name:
-                missing_params.append('doctorName')
-            if not procedure_code:
-                missing_params.append('procedureCode')
-            
-            error_message = f'Missing required parameters: {", ".join(missing_params)}. Please provide both doctor name and procedure code.'
+        # Validate required parameters - only doctorName is required
+        if not doctor_name:
+            error_message = 'Missing required parameter: doctorName. Please provide the doctor name.'
             if is_bedrock_agent:
                 return {
                     'messageVersion': '1.0',
@@ -68,27 +62,64 @@ def lambda_handler(event, context):
                     'body': json.dumps({'message': error_message})
                 }
 
-        # Query DynamoDB for specific doctor's procedures
-        print(f"Querying for doctor: {doctor_name}, procedure: {procedure_code}")
+        # Query DynamoDB for doctor's procedures
+        print(f"Querying for doctor: {doctor_name}")
+        if procedure_code:
+            print(f"Filtering for specific procedure: {procedure_code}")
         
+        # Base query for the doctor
         response = table.query(
-            KeyConditionExpression=Key('DoctorName').eq(doctor_name),
-            FilterExpression=Attr('procedure_code').eq(procedure_code)
+            KeyConditionExpression=Key('DoctorName').eq(doctor_name)
         )
 
         items = response.get('Items', [])
-        print(f"Found {len(items)} items for doctor {doctor_name} with procedure {procedure_code}")
+        print(f"Found {len(items)} total items for doctor {doctor_name}")
+
+        # Filter by procedure code if provided
+        if procedure_code:
+            items = [item for item in items if item.get('procedure_code') == procedure_code]
+            print(f"Filtered to {len(items)} items for procedure {procedure_code}")
 
         if items:
             # Extract costs and calculate median
             costs = [float(item['cost']) for item in items]
             median_cost = statistics.median(costs)
-            procedure_name = items[0].get('procedure_name', procedure_code)
             
             print(f"Costs found: {costs}")
             print(f"Median cost: {median_cost}")
             
-            message = f'The median cost for procedure "{procedure_name}" ({procedure_code}) by Dr. {doctor_name} is ${median_cost:.2f}.'
+            if procedure_code:
+                # Specific procedure median
+                procedure_name = items[0].get('procedure_name', procedure_code)
+                message = f'The median cost for procedure "{procedure_name}" ({procedure_code}) by Dr. {doctor_name} is ${median_cost:.2f}.'
+                result_data = {
+                    'message': message,
+                    'doctorName': doctor_name,
+                    'procedureCode': procedure_code,
+                    'procedureName': procedure_name,
+                    'medianCost': median_cost,
+                    'sampleCount': len(items),
+                    'costRange': {
+                        'min': min(costs),
+                        'max': max(costs)
+                    }
+                }
+            else:
+                # Overall median for all procedures by this doctor
+                unique_procedures = list(set(item.get('procedure_name', 'Unknown') for item in items))
+                message = f'The median cost for all procedures by Dr. {doctor_name} is ${median_cost:.2f}. This includes {len(unique_procedures)} different procedure types.'
+                result_data = {
+                    'message': message,
+                    'doctorName': doctor_name,
+                    'allProcedures': True,
+                    'medianCost': median_cost,
+                    'sampleCount': len(items),
+                    'procedureTypes': unique_procedures,
+                    'costRange': {
+                        'min': min(costs),
+                        'max': max(costs)
+                    }
+                }
 
             if is_bedrock_agent:
                 return {
@@ -100,18 +131,7 @@ def lambda_handler(event, context):
                         'httpStatusCode': 200,
                         'responseBody': {
                             'application/json': {
-                                'body': json.dumps({
-                                    'message': message,
-                                    'doctorName': doctor_name,
-                                    'procedureCode': procedure_code,
-                                    'procedureName': procedure_name,
-                                    'medianCost': median_cost,
-                                    'sampleCount': len(items),
-                                    'costRange': {
-                                        'min': min(costs),
-                                        'max': max(costs)
-                                    }
-                                })
+                                'body': json.dumps(result_data)
                             }
                         }
                     }
@@ -120,10 +140,13 @@ def lambda_handler(event, context):
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*'},
-                    'body': json.dumps({'message': message})
+                    'body': json.dumps(result_data)
                 }
         else:
-            error_message = f'No procedures found for Dr. {doctor_name} with procedure code "{procedure_code}".'
+            if procedure_code:
+                error_message = f'No procedures found for Dr. {doctor_name} with procedure code "{procedure_code}".'
+            else:
+                error_message = f'No procedures found for Dr. {doctor_name}.'
             if is_bedrock_agent:
                 return {
                     'messageVersion': '1.0',

@@ -1,0 +1,17 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "AmazonBedrockAgentBedrockFoundationModelPolicyProd",
+            "Effect": "Allow",
+            "Action": [
+                "bedrock:InvokeModel",
+                "bedrock:InvokeModelWithResponseStream"
+            ],
+            "Resource": [
+                "arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-5-sonnet-20241022-v2:0",
+                "arn:aws:bedrock:us-east-1::foundation-model/amazon.nova-pro-v1:0"
+            ]
+        }
+    ]
+}
