@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 
 # Configuration
-TABLE_NAME = 'doctor-procedures-table'
+TABLE_NAME = 'DoctorProcedures'
 REGION = 'us-east-1'
 
 # Initialize DynamoDB client
@@ -160,12 +160,12 @@ def create_entry(doctor_name, procedure_code, procedure_info):
     timestamp = generate_timestamp()
     
     return {
-        'doctor_name': doctor_name,
+        'DoctorName': doctor_name,  # Hash key
+        'ProcedureTime': timestamp,  # Range key
         'procedure_code': procedure_code,
         'procedure_name': procedure_info['name'],
         'cost': Decimal(str(cost)),
-        'timestamp': timestamp,
-        'created_at': datetime.now().isoformat()
+        'time_logged': timestamp
     }
 
 def populate_database():
