@@ -25,12 +25,23 @@ def lambda_handler(event, context):
         
         print(f"Detected Bedrock Agent: {is_bedrock_agent}")
         
+        # Additional debugging for Bedrock Agent events
+        if is_bedrock_agent:
+            print(f"Bedrock Agent ID: {event.get('agent', {}).get('id', 'Unknown')}")
+            print(f"Action Group: {event.get('actionGroup', 'Unknown')}")
+            print(f"API Path: {event.get('apiPath', 'Unknown')}")
+            print(f"Raw parameters: {event.get('parameters', [])}")
+        
         # Handle Bedrock Agent parameters vs API Gateway parameters
         if is_bedrock_agent:
             # Extract parameters from Bedrock Agent event
             parameters = {param['name']: param['value'] for param in event.get('parameters', [])}
             doctor_name = parameters.get('doctorName')
             procedure_code = parameters.get('procedureCode')  # Optional
+            
+            # Debug: Print extracted parameters
+            print(f"Bedrock Agent parameters extracted: {parameters}")
+            print(f"Doctor name from parameters: {doctor_name}")
         else:
             # Handle API Gateway query parameters
             query_params = event.get('queryStringParameters') or {}
@@ -39,7 +50,10 @@ def lambda_handler(event, context):
 
         # Validate required parameters - only doctorName is required
         if not doctor_name:
-            error_message = 'Missing required parameter: doctorName. Please provide the doctor name.'
+            if is_bedrock_agent:
+                error_message = 'Missing required parameter: doctorName. Please specify which doctor you want to get a quote for.'
+            else:
+                error_message = 'Missing required parameter: doctorName. Please provide the doctor name.'
             if is_bedrock_agent:
                 return {
                     'messageVersion': '1.0',
