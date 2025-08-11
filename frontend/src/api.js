@@ -52,9 +52,9 @@ class APIClient {
     }
   }
 
-  async getQuote(procedureCode) {
+  async getQuote(doctorName, procedureCode) {
     try {
-      const response = await this.client.get(`/get-quote?procedureCode=${encodeURIComponent(procedureCode)}`);
+      const response = await this.client.get(`/get-quote?doctorName=${encodeURIComponent(doctorName)}&procedureCode=${encodeURIComponent(procedureCode)}`);
       return response.data;
     } catch (error) {
       console.error('Get quote error:', error);

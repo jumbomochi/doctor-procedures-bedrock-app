@@ -7,7 +7,7 @@ const ChatInterface = () => {
     {
       id: 1,
       type: 'bot',
-      content: 'Hello! I\'m your AI assistant for managing doctor procedures. You can ask me to:\n\n• Show procedure history for a doctor\n• Get cost quotes for procedures\n• Add new procedures\n\nTry asking: "Show me the history for Dr. Smith" or "What is the cost for procedure TEST001?"',
+      content: 'Hello! I\'m your AI assistant for managing doctor procedures. I have enhanced natural language processing with conversation memory!\n\n🎯 Try these examples:\n• "Show history for Sarah Johnson"\n• "Get quote for Sarah Johnson ENDO001" \n• "Cost of LAB001 by robert brown"\n• "Add procedure for Sarah Johnson"\n\n✨ I remember our conversation, so you can ask follow-up questions using "her", "his", or "that doctor"!',
       timestamp: new Date()
     }
   ]);
@@ -56,27 +56,37 @@ const ChatInterface = () => {
         content: response.response || response.message || 'I received your request, but got an unexpected response format.',
         timestamp: new Date(),
         success: true,
-        intentMapped: response.intentMapped !== false, // Track if intent was mapped
-        rawResponse: response // Store full response for debugging
+        intentMapped: response.intentMapped !== false,
+        fallbackUsed: response.fallbackUsed || false,
+        extractedParams: response.extractedParams || null,
+        contextUsed: response.contextUsed || false,
+        rawResponse: response
       };
 
       setMessages(prev => [...prev, botMessage]);
       
-      // Add bot response to conversation history for context
+      // Add bot response to conversation history for context with enhanced metadata
       const finalHistory = [
         ...updatedHistory,
         { 
           role: 'assistant', 
           content: botMessage.content, 
           timestamp: new Date().toISOString(),
-          intentMapped: botMessage.intentMapped 
+          intentMapped: botMessage.intentMapped,
+          fallbackUsed: botMessage.fallbackUsed,
+          extractedParams: botMessage.extractedParams
         }
       ];
       setConversationHistory(finalHistory);
       
-      // Limit conversation history to last 20 exchanges (40 entries) to prevent payload from getting too large
+      // Limit conversation history to last 20 exchanges (40 entries) but keep important context
       if (finalHistory.length > 40) {
-        setConversationHistory(finalHistory.slice(-40));
+        // Keep first 2 exchanges (4 entries) for initial context and last 18 exchanges (36 entries)
+        const importantHistory = [
+          ...finalHistory.slice(0, 4),
+          ...finalHistory.slice(-36)
+        ];
+        setConversationHistory(importantHistory);
       }
       
     } catch (error) {
@@ -186,14 +196,17 @@ const ChatInterface = () => {
                 : 'bg-maroon-50 text-maroon-800 border border-maroon-100'
             }`}>
               <div className="whitespace-pre-wrap text-sm">{message.content}</div>
-              {message.intentMapped === false && (
-                <div className="text-xs mt-2 p-2 bg-yellow-100 rounded border-yellow-300 border">
-                  💭 <em>General conversation - maintaining context for future questions</em>
+              
+              {/* Simple status indicators */}
+              {message.contextUsed && (
+                <div className="text-xs mt-2 p-2 bg-blue-100 rounded border-blue-300 border">
+                  🧠 <em>Used conversation context</em>
                 </div>
               )}
-              {message.success && message.intentMapped !== false && (
-                <div className="text-xs mt-2 p-2 bg-green-100 rounded border-green-300 border">
-                  ✅ <em>Intent recognized and processed</em>
+              
+              {message.fallbackUsed && (
+                <div className="text-xs mt-2 p-2 bg-orange-100 rounded border-orange-300 border">
+                  🔄 <em>Smart fallback used</em>
                 </div>
               )}
               <div className={`text-xs mt-1 opacity-75 ${
@@ -236,7 +249,7 @@ const ChatInterface = () => {
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             onKeyPress={handleKeyPress}
-            placeholder="Ask me about procedures, costs, or history..."
+            placeholder="Ask me about doctor procedures... (e.g., 'Show history for Sarah Johnson')"
             className="flex-1 resize-none border border-maroon-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
             rows="2"
             disabled={isLoading}

@@ -1,0 +1,23 @@
+{
+  "agent": {
+    "name": "DoctorProceduresBedrockAgent",
+    "version": "1.0.0",
+    "id": "EBGEJR3FWL"
+  },
+  "actionGroup": "BedrockIntentMapperGroup",
+  "apiPath": "/intent-mapper",
+  "httpMethod": "POST",
+  "messageVersion": "1.0",
+  "parameters": [
+    {
+      "name": "text",
+      "type": "string",
+      "value": "I need a quote for Dr. Smith"
+    },
+    {
+      "name": "sessionId",
+      "type": "string",
+      "value": "test-session-123"
+    }
+  ]
+}

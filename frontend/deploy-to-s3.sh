@@ -6,7 +6,7 @@
 set -e
 
 # Configuration
-BUCKET_NAME="doctor-procedures-app"  # Change this to your desired bucket name
+BUCKET_NAME="fph-copilot-bucket-5432"  # Using existing bucket
 REGION="us-east-1"  # Change to your preferred AWS region
 BUILD_DIR="build"
 
@@ -28,33 +28,12 @@ fi
 
 echo "📦 Build directory found: $BUILD_DIR"
 
-# Create S3 bucket (will fail gracefully if bucket already exists)
-echo "🪣 Creating S3 bucket: $BUCKET_NAME"
-aws s3 mb s3://$BUCKET_NAME --region $REGION 2>/dev/null || echo "   (Bucket may already exist)"
+# Using existing bucket - skip creation and policy setup
+echo "🪣 Using existing S3 bucket: $BUCKET_NAME"
 
-# Enable static website hosting
+# Enable static website hosting (safe to run multiple times)
 echo "🌐 Configuring static website hosting..."
 aws s3 website s3://$BUCKET_NAME --index-document index.html --error-document index.html
-
-# Set bucket policy for public read access
-echo "🔓 Setting bucket policy for public access..."
-cat > bucket-policy.json << EOF
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "PublicReadGetObject",
-            "Effect": "Allow",
-            "Principal": "*",
-            "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::$BUCKET_NAME/*"
-        }
-    ]
-}
-EOF
-
-aws s3api put-bucket-policy --bucket $BUCKET_NAME --policy file://bucket-policy.json
-rm bucket-policy.json
 
 # Sync build files to S3
 echo "📤 Uploading files to S3..."

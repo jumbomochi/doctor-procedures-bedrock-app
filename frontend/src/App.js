@@ -127,23 +127,46 @@ const Dashboard = () => {
       {/* Tips Section */}
       <div className="bg-maroon-50 rounded-lg p-6 border border-maroon-100">
         <h3 className="text-lg font-semibold text-maroon-800 mb-4">💡 Tips for using the app</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
           <div>
-            <h4 className="font-medium text-maroon-700 mb-2">Chat Examples:</h4>
+            <h4 className="font-medium text-maroon-700 mb-2">🤖 Chat Examples (AI Agent):</h4>
             <ul className="space-y-1 text-maroon-600">
-              <li>• "Show me the history for Dr. Smith"</li>
-              <li>• "What is the cost for procedure TEST001?"</li>
-              <li>• "Add a procedure for Dr. Johnson"</li>
+              <li>• "Show history for Sarah Johnson" ✅</li>
+              <li>• "Get quote for Sarah Johnson ENDO001" ✅</li>
+              <li>• Then: "What about her overall costs?" ✅</li>
+              <li>• Or: "Show me Robert Brown's info" ✅</li>
+              <li>• (Note: Use Quick Actions form to add procedures)</li>
             </ul>
           </div>
           <div>
-            <h4 className="font-medium text-maroon-700 mb-2">Quick Actions:</h4>
+            <h4 className="font-medium text-maroon-700 mb-2">🧠 Conversation Memory:</h4>
             <ul className="space-y-1 text-maroon-600">
-              <li>• Use forms for structured data entry</li>
-              <li>• Results appear instantly below forms</li>
-              <li>• Click the ✕ to return to main menu</li>
+              <li>• Chat remembers conversation context</li>
+              <li>• Ask follow-ups: "What about her costs?"</li>
+              <li>• Reference: "that doctor", "the procedure"</li>
+              <li>• Smart suggestions appear automatically</li>
+              <li>• Context improves understanding</li>
             </ul>
           </div>
+          <div>
+            <h4 className="font-medium text-maroon-700 mb-2">⚡ Quick Actions:</h4>
+            <ul className="space-y-1 text-maroon-600">
+              <li>• Best for adding new procedures</li>
+              <li>• Forms support fuzzy doctor matching</li>
+              <li>• Leave procedure code empty for overall costs</li>
+              <li>• Real doctor names from database work</li>
+              <li>• Click ✕ to return to menu</li>
+            </ul>
+          </div>
+        </div>
+        <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+          <h4 className="font-medium text-yellow-800 mb-1">🎯 Available Doctors & Common Procedure Codes:</h4>
+          <p className="text-xs text-yellow-700">
+            <strong>Doctors:</strong> Sarah Johnson, Robert Brown, Michael Smith, Emily Davis, James Wilson
+            <br />
+            <strong>Procedure Codes:</strong> ENDO001 (Colonoscopy), LAB001 (Blood Count), XRAY001 (Chest X-Ray), 
+            CONS001 (Initial Consultation), CONS002 (Follow-up), PHYS001 (Physical Therapy)
+          </p>
         </div>
       </div>
     </div>

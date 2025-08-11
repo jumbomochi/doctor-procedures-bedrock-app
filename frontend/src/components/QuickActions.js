@@ -17,6 +17,7 @@ const QuickActions = () => {
   });
 
   const [quoteForm, setQuoteForm] = useState({
+    doctorName: '',
     procedureCode: ''
   });
 
@@ -30,7 +31,7 @@ const QuickActions = () => {
     setResult(null);
     setError(null);
     setAddProcedureForm({ doctorName: '', procedureCode: '', procedureName: '', cost: '' });
-    setQuoteForm({ procedureCode: '' });
+    setQuoteForm({ doctorName: '', procedureCode: '' });
     setHistoryForm({ doctorName: '', limit: 5 });
   };
 
@@ -65,11 +66,11 @@ const QuickActions = () => {
     setError(null);
 
     try {
-      const response = await apiClient.getQuote(quoteForm.procedureCode);
+      const response = await apiClient.getQuote(quoteForm.doctorName, quoteForm.procedureCode);
       setResult({
         type: 'info',
         title: 'Cost Quote',
-        message: response.message || `Quote for ${quoteForm.procedureCode}`,
+        message: response.message || `Quote for ${quoteForm.doctorName} - ${quoteForm.procedureCode}`,
         data: response
       });
     } catch (err) {
@@ -167,7 +168,7 @@ const QuickActions = () => {
                   value={addProcedureForm.doctorName}
                   onChange={(e) => setAddProcedureForm({...addProcedureForm, doctorName: e.target.value})}
                   className="w-full px-3 py-2 border border-maroon-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
-                  placeholder="Dr. Smith"
+                  placeholder="Sarah Johnson (fuzzy matching enabled)"
                   required
                 />
               </div>
@@ -234,29 +235,52 @@ const QuickActions = () => {
       {activeForm === 'quote' && (
         <div className="animate-fade-in">
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900">Get Cost Quote</h3>
+            <h3 className="text-lg font-semibold text-maroon-800">Get Cost Quote</h3>
             <button
               onClick={resetForms}
-              className="text-gray-500 hover:text-gray-700"
+              className="text-maroon-500 hover:text-maroon-700"
             >
               ✕
             </button>
           </div>
           
           <form onSubmit={handleGetQuote} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-maroon-700 mb-1">
-                <FileText className="w-4 h-4 inline mr-1" />
-                Procedure Code
-              </label>
-              <input
-                type="text"
-                value={quoteForm.procedureCode}
-                onChange={(e) => setQuoteForm({...quoteForm, procedureCode: e.target.value})}
-                className="w-full px-3 py-2 border border-maroon-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
-                placeholder="TEST001"
-                required
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-maroon-700 mb-1">
+                  <User className="w-4 h-4 inline mr-1" />
+                  Doctor Name
+                </label>
+                <input
+                  type="text"
+                  value={quoteForm.doctorName}
+                  onChange={(e) => setQuoteForm({...quoteForm, doctorName: e.target.value})}
+                  className="w-full px-3 py-2 border border-maroon-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                  placeholder="Sarah Johnson (or just 'sarah')"
+                  required
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-maroon-700 mb-1">
+                  <FileText className="w-4 h-4 inline mr-1" />
+                  Procedure Code (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={quoteForm.procedureCode}
+                  onChange={(e) => setQuoteForm({...quoteForm, procedureCode: e.target.value})}
+                  className="w-full px-3 py-2 border border-maroon-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                  placeholder="ENDO001, LAB001, XRAY001 (or leave empty for all)"
+                />
+              </div>
+            </div>
+            
+            <div className="text-sm text-maroon-600 bg-maroon-50 p-3 rounded-md">
+              <strong>💡 Smart Tips:</strong> 
+              <br />• Doctor names support fuzzy matching - "sarah", "Sarah Johnson", or even "sara jhonson" all work!
+              <br />• Leave procedure code empty for overall median cost, or use codes like ENDO001 (Colonoscopy), LAB001 (Blood Count)
+              <br />• Try real doctors: Sarah Johnson, Robert Brown, Michael Smith, Emily Davis
             </div>
             
             <button
@@ -296,7 +320,7 @@ const QuickActions = () => {
                   value={historyForm.doctorName}
                   onChange={(e) => setHistoryForm({...historyForm, doctorName: e.target.value})}
                   className="w-full px-3 py-2 border border-maroon-300 rounded-md focus:outline-none focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
-                  placeholder="Dr. Smith"
+                  placeholder="Robert Brown (or just 'robert')"
                   required
                 />
               </div>

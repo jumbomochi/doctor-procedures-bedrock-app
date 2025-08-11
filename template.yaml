@@ -54,6 +54,13 @@ Resources:
             Action:
               - bedrock:InvokeAgent
             Resource: '*'
+          - Effect: Allow
+            Action:
+              - lambda:InvokeFunction
+            Resource: 
+              - !GetAtt GetQuoteFunction.Arn
+              - !GetAtt ShowHistoryFunction.Arn
+              - !GetAtt AddDoctorProcedureFunction.Arn
       Events:
         BedrockIntentMapperApi:
           Type: Api

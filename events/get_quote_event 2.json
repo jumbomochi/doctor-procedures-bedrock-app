@@ -1,6 +1,5 @@
 {
   "queryStringParameters": {
-    "doctorName": "Dr. Alice Smith",
     "procedureCode": "CONSULT001"
   }
 }
